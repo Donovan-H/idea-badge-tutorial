@@ -629,7 +629,7 @@ Before returning the user to iDEA, you should log them out from your badge site.
 >
 >Therefore, whenever your badge site returns the user to the hub site (whether by clicking a back button, or upon completion of the badge), you should always destroy their session.
 >
->Also, you should ensure that your session expiry is less than XXXXXX (TODO: the hub site session expiry) to further mitigate this.
+>Also, you should ensure that your session expiry is less than 10800 (3 hours) to further mitigate this.
 
 In PHP, ending a session is as simple as calling `session_destroy()`, _however_ we want to do something slightly more complex here, which is to log the user out and then send them on to the `return_url` (if we have one).
 
