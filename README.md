@@ -799,4 +799,4 @@ You can click the link on the page to award yourself the points, and will be red
 
 ## 🎉 Congratulations!
 
-**You have successfully setup a local development environment, built your own badge site in PHP, tested it lcoally and deployed it to Heroku for production.**
+**You have successfully setup a local development environment, built your own badge site in PHP, tested it locally and deployed it to Heroku for production.**
