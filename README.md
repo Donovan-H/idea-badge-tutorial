@@ -536,6 +536,103 @@ You should now have the following in your `badge.php` file:
 </html>
 ```
 
+## 🚀 Updating the user's progress in a badge (optional)
+
+As a user progresses through your badge you may want to let the platform know about their progress. The benefit to doing this is it allows the user to complete your badge in multiple sittings as when they come back to the platform they will be presented with a 'Start Again' and 'Resume' option.
+
+To enable this functionality your badge needs to make an HTTP `POST` request to `https://idea.org.uk/api/progress`. As with the `/api/user` call, we need to pass in the access token as a bearer token in an HTTP `Authorization` header. The API will validate the access token and determine which badge and user session the progress is about.
+
+Depending on how your application is set up you will need to do this on each new page. For the purposes of this tutorial we will add the request to the `badge.php` file that we have already created.
+
+Add the following code below the `GET /api/user` request in `badge.php`.
+
+```php
+$res = $client->request('POST', 'https://idea.org.uk/api/progress', [
+  'http_errors' => false,
+  'headers' => [
+    'Authorization' => 'Bearer ' . $_SESSION['oauth2_access_token']
+  ],
+  'json' => [
+    'progress' => 1, // or 2, or 3, or 4...
+  ]
+]);
+```
+
+> #### How iDEA handles progress
+> 
+> Once a progress value has been received for a user and your badge we will record that in our database. If a user completes the badge in one sitting then the progress values that are passed to iDEA are not used.
+> 
+> If a user drops off your badge midway through a sitting then they can 'resume' where they left it by going back to the iDEA website and clicking `Resume` when the go to your badge page. This in turn will send the progress parameter to your badge start url.
+> 
+> For example: if the start url for you badge is https://testbadge.com/index.php then iDEA will direct the user to https://testbadge.com/index.php?progress=2
+
+You can handle the response from the API call like with the `/api/user` call. We would recommend handling this silently, but logging any errors locally, as the user is not aware of a progress call being made and it may confuse them.
+
+```php
+$response = json_decode($res->getBody());
+```
+
+### Putting it all together
+
+You should now have the following in your PHP code at the top of your `badge.php` file:
+
+```php
+<?php
+
+require 'vendor/autoload.php';
+
+session_start();
+
+$client = new \GuzzleHttp\Client();
+
+$res = $client->request('GET', 'https://idea.org.uk/api/user', [
+  'http_errors' => false,
+  'headers' => [
+    'Authorization' => 'Bearer ' . $_SESSION['oauth2_access_token']
+  ]
+]);
+
+$user = json_decode($res->getBody());
+
+// Update the progress to level 1
+$res = $client->request('POST', 'https://idea.org.uk/api/progress', [
+  'http_errors' => false,
+  'headers' => [
+    'Authorization' => 'Bearer ' . $_SESSION['oauth2_access_token']
+  ],
+  'json' => [
+    'progress' => 1,
+  ]
+]);
+
+?>
+```
+
+### Handling the progress parameter when the user returns to your badge.
+
+If the user has previously attempted your badge then they will return to your badge with a `progress` URL parameter. You will need to handle this and store it. In our example badge the entry point is `index.php`. In this file we will add a check for the progress parameter and store it in our session.
+
+```
+if(isset($_GET['progress']))
+{
+  $_SESSION['progress'] = $_GET['progress'];
+}
+```
+
+Then when the user gets authorised and redirected back to the `callback.php` file we can decide what to do with them based on the progress value:
+
+```
+if(isset($_SESSION['progress']))
+{
+  header('Location: badge-x.php'); // A made up page that you would redirect them to based on the progress value
+}
+else
+{
+  header('Location: badge.php'); // Start from the initial page
+}
+```
+
+
 ## 🏆 Updating the user's profile (redeeming the badge)
 
 We are now going to build our `badge_completed.php` page which is accessed when the user has successfuly completed the badge.
@@ -544,7 +641,7 @@ We are now going to build our `badge_completed.php` page which is accessed when 
 >
 >Clearly, this example has been for illustration only: in reality, your badge should in some way validate that the user has completed the badge. For example, this would usually be by way of a quiz or other exercises and then validating the answers, to confirm that the user has learnt the required information/completed the necessary exercises in order to deserve their points.
 
-A badge can be redeemed by making an HTTP `POST` request to `https://idea.org.uk/api/result`. As with the `/api/user` call, we need to pass in the access token as a bearer token in an HTTP `Authorization` header. The API will validate the access token and determine which badge should be redeemed.
+A badge can be redeemed by making an HTTP `POST` request to `https://idea.org.uk/api/result`. As with the `/api/user` and `/api/progress` calls, we need to pass in the access token as a bearer token in an HTTP `Authorization` header. The API will validate the access token and determine which badge should be redeemed.
 
 We start by including the Composer `autoload.php` file, starting the session, and creating a Guzzle HTTP client, as before:
 

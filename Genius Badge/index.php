@@ -2,6 +2,12 @@
 session_start();
 $state = hash('sha256', microtime(true) . rand());
 $_SESSION['oauth2_state'] = $state;
+
+if(isset($_GET['progress']))
+{
+	$_SESSION['progress'] = $_GET['progress'];
+}
+
 $params = [
    'response_type' => 'code',
    'client_id' => getenv('GENIUS_BADGE_CLIENT_ID'),

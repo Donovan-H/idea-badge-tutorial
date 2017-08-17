@@ -15,6 +15,17 @@ $res = $client->request('GET', 'https://idea.org.uk/api/user', [
 
 $user = json_decode($res->getBody());
 
+// Update the progress to level 1
+$res = $client->request('POST', 'https://idea.org.uk/api/progress', [
+	'http_errors' => false,
+	'headers' => [
+		'Authorization' => 'Bearer ' . $_SESSION['oauth2_access_token']
+	],
+	'json' => [
+		'progress' => 1,
+	]
+]);
+
 ?>
 <!DOCTYPE html>
 <html>
