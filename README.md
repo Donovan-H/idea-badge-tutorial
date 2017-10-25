@@ -536,7 +536,7 @@ You should now have the following in your `badge.php` file:
 </html>
 ```
 
-## 🚀 Updating the user's progress in a badge (optional)
+## 🚀 Updating the user's progress in a badge
 
 As a user progresses through your badge you may want to let the platform know about their progress. The benefit to doing this is it allows the user to complete your badge in multiple sittings as when they come back to the platform they will be presented with a 'Start Again' and 'Resume' option.
 
