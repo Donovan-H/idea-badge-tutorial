@@ -475,6 +475,20 @@ Finally, its time to write some HTML to render the badge page itself. We're goin
 
 This page has an `<h1>` header tag which echoes the user's name, and an `<img>` tag which contains the user's profile (avatar) image.
 
+### The user object
+Along with the `name` and `image_url` there are two other parameters returned with the user object; progress and data.
+
+```json
+{
+  "name": "Tom Smith",
+  "image_url" : "https://idea.org.uk/img/profile38423.jpg",
+  "progress" : 1,
+  "data" : "{ lives: 3 }"
+}
+```
+
+You can read more about the progress call below but essentially `progress` and `data` are fields you can set to store the progress of the user on the badge. If you have any kind of data that needs to be stored from attempt to attempt then this will be returned here. 
+
 ## 🔨 Creating a basic badge task
 
 Our badge site is going to be incredibly simple and easy: all the user has to do is a click a link saying "I Am A Genius" to complete the badge, and be awarded their points.
@@ -553,7 +567,8 @@ $res = $client->request('POST', 'https://idea.org.uk/api/progress', [
     'Authorization' => 'Bearer ' . $_SESSION['oauth2_access_token']
   ],
   'json' => [
-    'progress' => 1, // or 2, or 3, or 4...
+    'progress' => 1, // or 2, or 3, or 4... an integer representing a bookmark.
+    'data' => {"lives":1}, // JSON or XML encoded string
   ]
 ]);
 ```
