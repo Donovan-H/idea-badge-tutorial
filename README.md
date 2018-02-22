@@ -476,7 +476,7 @@ Finally, its time to write some HTML to render the badge page itself. We're goin
 This page has an `<h1>` header tag which echoes the user's name, and an `<img>` tag which contains the user's profile (avatar) image.
 
 ### The user object
-Along with the `name` and `image_url` there are two other parameters returned with the user object; progress and data.
+Along with the `name` and `image_url` there are two other parameters returned with the user object; `progress` and `data`.
 
 ```json
 {
