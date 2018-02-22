@@ -538,7 +538,7 @@ You should now have the following in your `badge.php` file:
 
 ## 🚀 Updating the user's progress in a badge
 
-As a user progresses through your badge you may want to let the platform know about their progress. The benefit to doing this is it allows the user to complete your badge in multiple sittings as when they come back to the platform they will be presented with a 'Start Again' and 'Resume' option.
+As a user progresses through your badge, the platform needs to log their progress. This allows the user to complete your badge in increments rather than having to do it all in one sitting. Being able to stop and resume badges is important, especially for workshop and classroom environments. The following shows what you need to do so that when users come back to the platform, they will be presented with a 'Start Again' and 'Resume' option.
 
 To enable this functionality your badge needs to make an HTTP `POST` request to `https://idea.org.uk/api/progress`. As with the `/api/user` call, we need to pass in the access token as a bearer token in an HTTP `Authorization` header. The API will validate the access token and determine which badge and user session the progress is about.
 
