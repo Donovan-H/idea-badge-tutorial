@@ -169,7 +169,7 @@ $_SESSION['oauth2_state'] = $state;
 
 ```
 
-Next, we need to build the authentication URL, to which the user is going to be redirected. The URL takes a fixed format of `https://idea.eu.auth0.com/authorize` followed by a query string consisting of:
+Next, we need to build the authentication URL, to which the user is going to be redirected. The URL takes a fixed format of `https://idea.org.uk/oauth/authorize` followed by a query string consisting of:
 
 * `response_type` - the _response type_ that corresponds to the grant type we are using. In this case, we are building a server-side web application in PHP, so this should be set to `code`.
 * `client_id` - your Auth0 client ID, which is unique to your badge site.
@@ -188,7 +188,7 @@ $params = [
    'state' => $state
 ];
 
-$authUrl = 'https://idea.eu.auth0.com/authorize?' . http_build_query($params);
+$authUrl = 'https://idea.org.uk/oauth/authorize?' . http_build_query($params);
 ```
 
 Next, we redirect the user to this URL, by rewriting the `Location` HTTP header (this is the standard mechanism in PHP to perform an HTTP 302 redirect):
@@ -218,7 +218,7 @@ $params = [
    'state' => $state
 ];
 
-$authUrl = 'https://idea.eu.auth0.com/authorize?' . http_build_query($params);
+$authUrl = 'https://idea.org.uk/oauth/authorize?' . http_build_query($params);
 
 header("Location: $authUrl");
 ```
@@ -318,7 +318,7 @@ We can now proceed with making a new request, in this case we specify it is a `P
 >Using `form_params` in Guzzle automatically specifies that the data will be sent in `application/x-www-form-urlencoded` format.
 
 ```php
-$res = $client->request('POST', 'https://idea.eu.auth0.com/oauth/token', [
+$res = $client->request('POST', 'https://idea.org.uk/oauth/token', [
      'form_params' => [
           'client_id' => getenv('GENIUS_BADGE_CLIENT_ID'),
           'client_secret' => getenv('GENIUS_BADGE_CLIENT_SECRET'),
@@ -380,7 +380,7 @@ if (isset($state) && $state !== $_SESSION['oauth2_state']) {
 
 $client = new \GuzzleHttp\Client();
 
-$res = $client->request('POST', 'https://idea.eu.auth0.com/oauth/token', [
+$res = $client->request('POST', 'https://idea.org.uk/oauth/token', [
      'form_params' => [
           'client_id' => getenv('GENIUS_BADGE_CLIENT_ID'),
           'client_secret' => getenv('GENIUS_BADGE_CLIENT_SECRET'),
