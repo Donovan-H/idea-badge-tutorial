@@ -126,13 +126,13 @@ Windows users can follow [this guide](http://www.computerhope.com/issues/ch00054
 
 This now completes your local development environment setup, and you are ready to start coding!
 
-## 🔑 Authenticating the user with Auth0
+## 🔑 Authenticating the user
 
 We'll now go through the steps involved in creating an `index.php` file to authenticate users when they land on your badge site.
 
-When someone lands on your badge site, instead of serving any content (i.e. your badge), we first need to redirect them to Auth0 to check for their authorisation status.
+When someone lands on your badge site, instead of serving any content (i.e. your badge), we first need to redirect them to iDEA's authentication endpoint to check their authorisation status.
 
-Typically, when originating from the iDEA hub site, the user will already be logged into iDEA, so they will already have a valid logged-in session with Auth0, which means that they won't be prompted to login again at Auth0, and will be _immediately_ redirected back to your badge site.
+Typically, when originating from the iDEA hub site, the user will already be logged into iDEA, so they will already have a valid logged-in session, which means that they won't be prompted to login again at the authentication endpoint, and will be _immediately_ redirected back to your badge site.
 
 ### Creating the page, step-by-step
 
@@ -172,11 +172,11 @@ $_SESSION['oauth2_state'] = $state;
 Next, we need to build the authentication URL, to which the user is going to be redirected. The URL takes a fixed format of `https://idea.org.uk/oauth/authorize` followed by a query string consisting of:
 
 * `response_type` - the _response type_ that corresponds to the grant type we are using. In this case, we are building a server-side web application in PHP, so this should be set to `code`.
-* `client_id` - your Auth0 client ID, which is unique to your badge site.
-* `redirect_uri` - the URL to which the user should be redirected to, after completing the authentication with Auth0.
-* `prompt` - the _prompt_ value that defines how Auth0 should ask the user for credentials. this must always be *none* to ensure that the user has previosuly logged into iDEA before trying to access the Badge.
+* `client_id` - your client ID, which is unique to your badge site.
+* `redirect_uri` - the URL to which the user should be redirected to, after completing the authentication with iDEA.
+* `prompt` - the _prompt_ value that defines how iDEA should ask the user for credentials. this must always be *none* to ensure that the user has previosuly logged into iDEA before trying to access the Badge.
 * `scope` - the _scope_ of the attributes that should be contained within the access token that will be issed. In this case, we are only interested in the default `openid` attributes (more on those later).
-* `state` - the randomly state we generated earlier to protect against CSRF attacks. We need to send this to Auth0 with our request, so that Auth0 sends it back to us later in the process so we can be sure that the user intentionally authorized this request.
+* `state` - the randomly state we generated earlier to protect against CSRF attacks. We need to send this to iDEA's authentication endpoint, so we can be sure that the user intentionally authorized this request.
 
 ```php
 $params = [
@@ -227,12 +227,12 @@ You can save this file as `index.php`, and are ready to proceed with the next st
 
 ## ♻️ Exchange the authorization code for an access token
 
-Once the user has finished authenticating with Auth0, they will then be redirected back to your badge site, at the `redirect_uri` you provided in your original redirect to Auth0.
+Once the user has finished authenticating with iDEA, they will then be redirected back to your badge site, at the `redirect_uri` you provided in your original redirect to iDEA.
 
 The redirect back to your site will include two of three possible query string parameters in the URL:
 
 * `state`, which should be the same value as the `state` value you randomly generated in the original redirect. This value must always be present.
-* `code`, which is an authorization code issued by Auth0, which will need to be exchanged for a proper access token to allow you to access protected iDEA resources (such as getting a user's profile and updating their badge progress). This value is only present if the authentication was successful
+* `code`, which is an authorization code issued by iDEA, which will need to be exchanged for a proper access token to allow you to access protected iDEA resources (such as getting a user's profile and updating their badge progress). This value is only present if the authentication was successful
 * `error`. which is a code to identify the reason why the user could not be authenticated. This value is only present if the user has not logged in to iDEA or if the user can't access the Badge.
 
 We will now build the page that the user should be returned to, which we will call `callback.php`.
@@ -297,10 +297,10 @@ So if this check fails, then this might be due to a CSRF attack, so we want to i
 
 If the check succeeds, then the program execution continues, and we can now be certain that we have a `code`, and we also have a valid `state`, so we can now proceed with exchanging our authorization code for an access token.
 
-The process of exchanging the authorization code for an access token is done by making a `POST` HTTP call to Auth0, providing them with:
+The process of exchanging the authorization code for an access token is done by making a `POST` HTTP call to iDEA, providing us with:
 
 * `client_id` - the Client ID of our badge site
-* `client_secret` - the Client Secret of our badge site (note that it is safe to include this parameter here, since this is being sent in a server-to-server call from your badge site server directly to Auth0, so it is never exposed to the user's browser)
+* `client_secret` - the Client Secret of our badge site (note that it is safe to include this parameter here, since this is being sent in a server-to-server call from your badge site server directly to iDEA, so it is never exposed to the user's browser)
 * `redirect_uri` - must match the `redirect_uri` we set in our original request
 * `code` - the code we received in the query string
 * `grant_type` - the type of OAuth2 flow we are using (in this case as it is a server-side web application, we specify `authorization_code`)
@@ -312,7 +312,7 @@ When using Guzzle, we first need to create a new HTTP client:-
 ```php
 $client = new \GuzzleHttp\Client();
 ```
-We can now proceed with making a new request, in this case we specify it is a `POST` request, pass in the Auth0 token exchange URL, and set the `form_params` to the values described above.
+We can now proceed with making a new request, in this case we specify it is a `POST` request, pass in the iDEA token exchange URL, and set the `form_params` to the values described above.
 
 >#### Form encoding
 >Using `form_params` in Guzzle automatically specifies that the data will be sent in `application/x-www-form-urlencoded` format.
@@ -749,7 +749,7 @@ This means that we need to follow these steps:
 
 1. Pass the `return_url` to the `logout.php` page from `badge_completed.php`.
 2. Call `session_destroy()` to destroy the user's session.
-3. Redirect to the `return_url` using `header('Location: ______');` )like we did when redirecting to Auth0).
+3. Redirect to the `return_url` using `header('Location: ______');` )like we did when redirecting to iDEA's authorisation endpoint).
 
 So first we need to update our `badge_completed.php` page to redirect to `logout.php` and to pass the `redirect_url` in the URL query string. You should add the following line of code to the end of `logout.php`:
 
@@ -897,15 +897,15 @@ heroku config:set GENIUS_BADGE_CLIENT_SECRET=__your_client_secret__
 heroku config:set GENIUS_BADGE_REDIRECT_URI=http://__your_app_name__.herokuapp.com/callback.php
 ```
 
-**IMPORTANT:** Notice that your redirect URI has now changed to point to your *.herokuapp.com URL instead of localhost. You now need to contact iDEA and get this URL added to your list of allowed callback URLs, otherwise you will get a "Callback URL mismatch" error from Auth0.
+**IMPORTANT:** Notice that your redirect URI has now changed to point to your *.herokuapp.com URL instead of localhost. You now need to contact iDEA and get this URL added to your list of allowed callback URLs, otherwise you will get a "Callback URL mismatch" error from iDEA's authentication endpoint.
 
 ## 🤞 Trying out your badge live
 
-Once your new callback URL has been added to your Auth0 client, you are ready to now try out your badge live on Heroku.
+Once your new callback URL has been added to your iDEA client, you are ready to now try out your badge live on Heroku.
 
 You can either navigate to your Heroku app URL, or type `heroku open` from your badge site root directory to open your site in your default browser.
 
-If you were already logged into the iDEA hub site, you should now find you are immediately automatically logged into your new badge site. If you weren't logged in to iDEA, you will be prompted by Auth0 to login first (visitors to your badge site generally won't have to login like this, as they'll already have a valid user session with the hub site so will skip the login step).
+If you were already logged into the iDEA hub site, you should now find you are immediately automatically logged into your new badge site. If you weren't logged in to iDEA, you will be prompted by iDEA to login first (visitors to your badge site generally won't have to login like this, as they'll already have a valid user session with the hub site so will skip the login step).
 
 You can click the link on the page to award yourself the points, and will be redirected back to the iDEA hub site.
 
